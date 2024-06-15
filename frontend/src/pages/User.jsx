@@ -1,10 +1,8 @@
 import { FiFolder } from "react-icons/fi";
 
 import { RiUserLocationLine } from "react-icons/ri";
-<<<<<<< Updated upstream
 import { IoEllipse } from "react-icons/io5";
 
-=======
 import {
   IoEllipse,
   IoPlanet,
@@ -16,7 +14,6 @@ import {
   BsArrowReturnLeft,
 } from "react-icons/bs";
 import { AiOutlineThunderbolt } from "react-icons/ai";
->>>>>>> Stashed changes
 import { TiTickOutline } from "react-icons/ti";
 import AddTask from "../components/AddTask";
 
