@@ -9,5 +9,6 @@ router.post("/register", userController.registerUser); //eslai ni controller ma 
 router.post("/login", userController.loginUser);
 router.get("/:userId", userController.getUserInfo);
 router.post("/posttask", userController.postTask);
+router.get("/post/:userId", userController.getUserFeed);
 
 module.exports = router;

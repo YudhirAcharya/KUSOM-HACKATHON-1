@@ -209,3 +209,53 @@ exports.getHandyFeed = (req, res) => {
     });
   });
 };
+
+exports.updateInterestStatus = (req, res) => {
+  const { post_id, interested_status } = req.body;
+  const { handyId } = req.params;
+
+  // Validate input
+  if (!post_id || interested_status === undefined || !handyId) {
+    return res.status(400).json({
+      message: "post_id, interested_status, and handyId are required",
+    });
+  }
+
+  const pool = req.pool;
+
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error getting database connection:", err);
+      return res.status(500).json({ message: "Error connecting to database." });
+    }
+
+    const sql = `
+      UPDATE interested 
+      SET interested_status = ? 
+      WHERE post_id = ? AND handy_id = ?
+    `;
+
+    connection.query(
+      sql,
+      [interested_status, post_id, handyId],
+      (err, result) => {
+        connection.release(); // Release the connection back to the pool
+
+        if (err) {
+          console.error("Error updating interested status:", err);
+          return res
+            .status(500)
+            .json({ message: "Error updating interested status.", error: err });
+        }
+
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ message: "No record found to update" });
+        }
+
+        res
+          .status(200)
+          .json({ message: "Interested status updated successfully" });
+      }
+    );
+  });
+};

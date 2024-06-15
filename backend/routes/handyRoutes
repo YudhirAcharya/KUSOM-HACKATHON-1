@@ -9,5 +9,6 @@ router.route("/register").post(handyAuthmiddleware.registerHandy); //eslai middl
 router.post("/login", handyController.loginHandy);
 router.route("/:handyId").get(handyController.getHandymanInfo);
 router.get("/post/:handyId", handyController.getHandyFeed);
+router.put("/updateInterest/:handyId", handyController.updateInterestStatus);
 
 module.exports = router;

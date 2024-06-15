@@ -201,21 +201,24 @@ exports.loginUser = (req, res) => {
   const { email, password: checkPassword } = req.body;
   const pool = req.pool;
   pool.getConnection((err, connection) => {
-    if (err) throw err;
+    if (err) {
+      console.error("Error getting database connection:", err);
+      return res
+        .status(500)
+        .json({ status: "error", error: "Internal Server Error" });
+    }
     connection.query(
-      "SELECT user_id,email,password FROM users WHERE email=?",
+      "SELECT user_id, email, password FROM users WHERE email = ?",
       [email],
       async (err, result) => {
         connection.release();
         if (err) {
-          // Handle the error
-          console.log("Error retrieving user:", err);
+          console.error("Error retrieving user:", err);
           return res
             .status(500)
             .json({ status: "error", error: "Internal Server Error" });
         }
         if (result.length === 0) {
-          // If user not found, send appropriate response
           return res
             .status(404)
             .json({ status: "error", error: "User not found" });
@@ -224,20 +227,23 @@ exports.loginUser = (req, res) => {
           const storedPassword = result[0].password;
           const storedEmail = result[0].email;
           const stored_user_id = result[0].user_id;
-          // console.log(user_id);
+
           try {
             const passwordsMatch = await comparePassword(
               checkPassword,
               storedPassword
             );
             if (passwordsMatch) {
-              const token = createToken(stored_user_id, email);
+              const token = createToken(stored_user_id, storedEmail);
               res.cookie("jwt", token, {
-                // domain: "localhost",
                 httpOnly: true,
-                maxAge: maxAge * 1000,
+                maxAge: maxAge * 1000, // Convert to milliseconds
               });
-              res.json({ status: "success", user_id: stored_user_id });
+              res.json({
+                status: "success",
+                user_id: stored_user_id,
+                jwt: token,
+              });
             } else {
               return res
                 .status(401)
@@ -252,5 +258,58 @@ exports.loginUser = (req, res) => {
         }
       }
     );
+  });
+};
+
+exports.getUserFeed = (req, res) => {
+  const { userId } = req.params;
+
+  // Validate input
+  if (!post_id) {
+    return res
+      .status(400)
+      .json({ message: "interested_status and post_id are required" });
+  }
+
+  const pool = req.pool;
+
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error getting database connection:", err);
+      return res.status(500).json({ message: "Error connecting to database." });
+    }
+    const sql = `
+    SELECT
+      h.handy_id,
+      h.handy_name,
+      h.handy_user_name,
+      h.phone_number,
+      h.h_email,
+      h.h_bio,
+      h.h_field,
+      h.h_photo,
+      h.h_fee,
+      h.h_expertise
+    FROM handyman h
+    INNER JOIN interested i ON h.handy_id = i.handy_id
+    WHERE i.interested_status = 1 AND i.post_id = ?
+  `;
+
+    connection.query(sql, [post_id], (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error executing query:", err);
+        return res
+          .status(500)
+          .json({ message: "Error querying database.", error: err });
+      }
+
+      res.status(200).json({
+        status: "success",
+        results: rows.length,
+        data: { rows },
+      });
+    });
   });
 };
