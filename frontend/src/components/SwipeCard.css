@@ -1,0 +1,17 @@
+/* SwipeCard.css */
+.swipe-card {
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  background: #fff;
+  will-change: transform;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-content {
+  font-size: 24px;
+}
